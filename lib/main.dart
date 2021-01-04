@@ -6,14 +6,33 @@ import 'package:audioplayers/audio_cache.dart';
 void main() {
   runApp(
     MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Exercise Timer Route',
       initialRoute: '/',
       routes: {
         '/': (BuildContext context) => ExerciseStart(),
-        '/exerciseStart': (BuildContext context) => Exercise(),
+        '/start': (BuildContext context) => Exercise(),
         '/finished': (BuildContext context) => ExerciseFinished(),
       },
     ),
+  );
+}
+
+Route _createRoute() {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => Exercise(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      var begin = Offset(0.0, 1.0);
+      var end = Offset.zero;
+      var curve = Curves.ease;
+
+      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+      return SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      );
+    },
   );
 }
 
@@ -39,7 +58,109 @@ class ExerciseStart extends StatelessWidget {
         heightFactor: 14.0,
         child: RaisedButton(
           child: Text("Start Exercise"),
-          onPressed: () => Navigator.pushNamed(context, "/exerciseStart"),
+          onPressed: () {
+            Navigator.of(context).push(_createRoute());
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class Exercise extends StatefulWidget {
+  @override
+  _ExerciseState createState() => _ExerciseState();
+}
+
+class _ExerciseState extends State<Exercise> {
+  ExerciseTime _exercise;
+
+  @override
+  // ignore: must_call_super
+  void initState() {
+    this._exercise = ExerciseTime();
+    this._exercise.exerciseTime = 0;
+    this._exercise.exerciseBreakTime = 0;
+    this._exercise.exerciseTotalCycle = 0;
+  }
+
+  void _handleChangeExerciseTime(event) {
+    try {
+      this._exercise.exerciseTime = event;
+    } catch (ex) {
+      print(ex.toString());
+    }
+  }
+
+  void _handleChangeExerciseBreak(event) {
+    try {
+      this._exercise.exerciseBreakTime = event;
+    } catch (ex) {
+      print(ex.toString());
+    }
+  }
+
+  void _handleChangeExerciseTotalTime(event) {
+    try {
+      this._exercise.exerciseTotalCycle = event;
+    } catch (ex) {
+      print(ex.toString());
+    }
+  }
+
+  void _handleSubmit() {
+    print(this._exercise);
+    if (this._exercise.exerciseTime != 0 &&
+        this._exercise.exerciseTotalCycle != 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Timer(
+            exercise: this._exercise,
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text("Exercise Timer"),
+        centerTitle: true,
+        backgroundColor: Colors.purple,
+      ),
+      body: Transform.translate(
+        offset: Offset(0, -50),
+        child: Center(
+          child: Container(
+            width: 180,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ExerciseInput(
+                    inputText: "Exercise time",
+                    setHandler: this._handleChangeExerciseTime,
+                  ),
+                  ExerciseInput(
+                    inputText: "Exercise break time",
+                    setHandler: this._handleChangeExerciseBreak,
+                  ),
+                  ExerciseInput(
+                    inputText: "Exercise total cycle",
+                    setHandler: this._handleChangeExerciseTotalTime,
+                  ),
+                  ExerciseButton(
+                    buttonText: "Start",
+                    setHandler: this._handleSubmit,
+                  ),
+                ],
+              ),
+            ),
+            // : Timer(),
+          ),
         ),
       ),
     );
@@ -222,106 +343,6 @@ class _Timer extends State<Timer> {
               ),
             )
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class Exercise extends StatefulWidget {
-  @override
-  _ExerciseState createState() => _ExerciseState();
-}
-
-class _ExerciseState extends State<Exercise> {
-  ExerciseTime _exercise;
-
-  @override
-  // ignore: must_call_super
-  void initState() {
-    this._exercise = ExerciseTime();
-    this._exercise.exerciseTime = 0;
-    this._exercise.exerciseBreakTime = 0;
-    this._exercise.exerciseTotalCycle = 0;
-  }
-
-  void _handleChangeExerciseTime(event) {
-    try {
-      this._exercise.exerciseTime = event;
-    } catch (ex) {
-      print(ex.toString());
-    }
-  }
-
-  void _handleChangeExerciseBreak(event) {
-    try {
-      this._exercise.exerciseBreakTime = event;
-    } catch (ex) {
-      print(ex.toString());
-    }
-  }
-
-  void _handleChangeExerciseTotalTime(event) {
-    try {
-      this._exercise.exerciseTotalCycle = event;
-    } catch (ex) {
-      print(ex.toString());
-    }
-  }
-
-  void _handleSubmit() {
-    print(this._exercise);
-    if (this._exercise.exerciseTime != 0 &&
-        this._exercise.exerciseTotalCycle != 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Timer(
-            exercise: this._exercise,
-          ),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("Exercise Timer"),
-        centerTitle: true,
-        backgroundColor: Colors.purple,
-      ),
-      body: Transform.translate(
-        offset: Offset(0, -50),
-        child: Center(
-          child: Container(
-            width: 180,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  ExerciseInput(
-                    inputText: "Exercise time",
-                    setHandler: this._handleChangeExerciseTime,
-                  ),
-                  ExerciseInput(
-                    inputText: "Exercise break time",
-                    setHandler: this._handleChangeExerciseBreak,
-                  ),
-                  ExerciseInput(
-                    inputText: "Exercise total cycle",
-                    setHandler: this._handleChangeExerciseTotalTime,
-                  ),
-                  ExerciseButton(
-                    buttonText: "Start",
-                    setHandler: this._handleSubmit,
-                  ),
-                ],
-              ),
-            ),
-            // : Timer(),
-          ),
         ),
       ),
     );
